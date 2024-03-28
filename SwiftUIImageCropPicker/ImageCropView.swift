@@ -23,6 +23,18 @@ struct ImageCropView: View {
     @State var scaledRectWidth: CGFloat = 0
     @State var scaledRectHeight: CGFloat = 0
     var coordinator: ImageCropPicker.Coordinator
+    
+    @State var newTopBlockArea: CGFloat = 0
+    @State var newBottomBlockArea: CGFloat = 0
+    @State var newLeftBlockArea: CGFloat = 0
+    @State var newRightBlockArea: CGFloat = 0
+    
+    @State var topBlockArea: CGFloat = 0
+    @State var bottomBlockArea: CGFloat = 0
+    @State var leftBlockArea: CGFloat = 0
+    @State var rightBlockArea: CGFloat = 0
+    
+    @State var percentCovered: CGFloat = 0
 //    @State private var position = CGPoint(x: 500, y: 100)
     let gripCircleSize: CGFloat = 16
     let screenSizeToImageSizeRatio: CGFloat = 0.7
@@ -182,7 +194,7 @@ struct ImageCropView: View {
                                             bottom: paddingBottom - gripCircleSize/2,
                                             trailing: paddingRight - gripCircleSize/2))
                         
-                        .gesture(drag)
+                        .gesture(drag2)
                     
                     
                     // grip circles
@@ -270,69 +282,109 @@ struct ImageCropView: View {
                 let cropY2 = gestureValue.startLocation.y - (self.scaledRectHeight - self.cropBottom)
                 
                 
+                topBlockArea = newTopBlockArea
+                bottomBlockArea = newBottomBlockArea
+                leftBlockArea = newLeftBlockArea
+                rightBlockArea = newRightBlockArea
+                let baseArea = scaledRectHeight * scaledRectWidth
+                
                 if (abs(cropX1) < gripCircleSize) {
                     
                     let leftPadding = cropLeft + gestureValue.translation.width
-                    let percent = (leftPadding / scaledRectWidth)
-                    debugPrint("percent = \(percent)")
+                    
+                    let totalWidthCovered = leftPadding + paddingRight
+//                    let topPadding = cropTop + gestureValue.translation.height
+//                    let bottomPadding = cropBottom - gestureValue.translation.height
+//                    let leftBlockHeight = (scaledRectHeight - (topPadding + bottomPadding))
+                    
+//                    leftBlockArea = leftPadding * leftBlockHeight
+//                    debugPrint("leftBlockArea = \(leftBlockArea)")
+                    
+                    let percent = (totalWidthCovered / scaledRectWidth)
+                    debugPrint("percent_1 = \(percent)")
                     if percent < 0.6 {
                         self.paddingLeft = max(leftPadding, 0)
-                        debugPrint("<jkg> Hit 1")
+                        debugPrint("Hit - 4")
                     }
-                    
+                  
                     
                 }
+                
                 else if (abs(cropX2) < gripCircleSize) {
                     debugPrint("<jkg> Hit 2")
                     let rightPadding = cropRight - gestureValue.translation.width
                     
-                    let percent = (rightPadding / scaledRectWidth)
-                    debugPrint("percent = \(percent)")
+                    let totalWidthCovered = rightPadding + paddingLeft
+                    
+//                    let topPadding = cropTop + gestureValue.translation.height
+//                    let bottomPadding = cropBottom - gestureValue.translation.height
+//                    let rightBlockHeight = (scaledRectHeight - (topPadding + bottomPadding))
+//                    
+//                    rightBlockArea = rightPadding * rightBlockHeight
+                    
+                    let percent = (totalWidthCovered / scaledRectWidth)
+                    debugPrint("percent_2 = \(percent)")
                     if percent < 0.6 {
                         self.paddingRight = max(rightPadding, 0)
+                        debugPrint("Hit - 5")
                     }
                    
                   //  self.paddingRight = max(rightPadding, 0)
                     
                 //    self.paddingRight = percent < 0.8 ? max(rightPadding, 0) : paddingRight
-                    
+                   
                     
                 }
                 
                 
             //    if gestureValue.startLocation.y  > 50 {
-                else if (abs(cropY1) < gripCircleSize) {
+                 if (abs(cropY1) < gripCircleSize) {
                     debugPrint("<jkg> Hit 3")
                     let topPadding = cropTop + gestureValue.translation.height
+                     
+                     let totalHeightCovered = topPadding + paddingBottom
+                     
+                  //   topBlockArea = topPadding * scaledRectWidth
                     
                     //let percent = (topPadding / scaledRectHeight)
-                    let percent = (topPadding / scaledRectHeight)
-                    debugPrint("percent = \(percent)")
+                    let percent = (totalHeightCovered / scaledRectHeight)
+                    debugPrint("percent_3 = \(percent)")
                     if percent < 0.6 {
                         self.paddingTop = max(topPadding, 0)
+                        debugPrint("Hit - 6")
                     }
+                     
+                
+                     
+                     
                     
                     
                 }
                 
-                else if (abs(cropY2) < gripCircleSize) {
+                 else if (abs(cropY2) < gripCircleSize) {
                     debugPrint("<jkg> Hit 4")
                     let bottomPadding = cropBottom - gestureValue.translation.height
+                     
+                    // bottomBlockArea = bottomPadding * scaledRectWidth
+                     
+                     let totalHeightCovered = bottomPadding + paddingTop
                     
-                    let percent = (bottomPadding / scaledRectHeight)
-                    debugPrint("percent = \(percent)")
+                    let percent = (totalHeightCovered / scaledRectHeight)
+                    debugPrint("percent_4 = \(percent)")
+                     
+                     
                     if percent < 0.6 {
                         self.paddingBottom = max(bottomPadding, 0)
+                        debugPrint("Hit - 7")
                     }
                     
+                     
                     
-                } else {
-                    debugPrint("<jkg><1> Hit 5")
-                    guard cropTop > 0 || cropBottom > 0 || cropLeft > 0 || cropRight > 0  else {
-                        debugPrint("<jkg><1> Hit 6 - \(cropTop)")
-                        return
-                    }
-                    debugPrint("<jkg><1> Hit 7 - \(cropTop)")
+                } 
+                
+                if  (abs(cropX1) > gripCircleSize) && (abs(cropX2) > gripCircleSize) && (abs(cropY1) > gripCircleSize) && (abs(cropY2) > gripCircleSize) {
+                    
+                    debugPrint("Hit - 1")
                     let topPadding = cropTop + gestureValue.translation.height
                     let leftPadding = cropLeft + gestureValue.translation.width
                     let rightPadding = cropRight - gestureValue.translation.width
@@ -361,18 +413,19 @@ struct ImageCropView: View {
 //                        self.paddingLeft = max(leftPadding, 0)
 //                        self.paddingRight = max(rightPadding, 0)
 //                        self.paddingBottom = max(bottomPadding, 0)
-//                        
+//
 //                    }
-//                    
+//
 //                    if topPadding >= 0, leftPadding >= 0, rightPadding >= 0, bottomPadding >= 0 {
 //                        self.paddingTop = max(topPadding, 0)
 //                        self.paddingLeft = max(leftPadding, 0)
 //                        self.paddingRight = max(rightPadding, 0)
 //                        self.paddingBottom = max(bottomPadding, 0)
-//                        
+//
 //                    }
                     
                     if topPadding > 0,  bottomPadding > 0 {
+                        debugPrint("Hit - 2")
                         self.paddingTop = max(topPadding, 0)
                        
                         self.paddingBottom = max(bottomPadding, 0)
@@ -380,7 +433,7 @@ struct ImageCropView: View {
                     }
                     
                     if leftPadding >= 0, rightPadding >= 0 {
-                        
+                        debugPrint("Hit - 3")
                         self.paddingLeft = max(leftPadding, 0)
                         self.paddingRight = max(rightPadding, 0)
                       
@@ -391,18 +444,11 @@ struct ImageCropView: View {
 //                    self.paddingBottom = max(bottomPadding, 0)
 //                    self.paddingLeft = max(leftPadding, 0)
 //                    self.paddingRight = max(rightPadding, 0)
-                    
-                   
-                    
-                   
-                    
-                   
+
                     
                 }
-              // }
-               
-               
                 
+
                 
                 debugPrint("<xyj> self.paddingLeft = \(self.paddingLeft))")
                 debugPrint("gestureValue.startLocation.x = \(gestureValue.startLocation.x)")
@@ -413,6 +459,14 @@ struct ImageCropView: View {
                // let workingOffset = CGSize(width: finalOffset.width + gestureValue.translation.width , height: finalOffset.height + gestureValue.translation.height)
                 //debugPrint("workingOffset.width = \(gestureValue.translation.width)")
 //activeOffset.width = gestureValue.translation.width
+                
+                let totalArea = topBlockArea + bottomBlockArea + leftBlockArea + rightBlockArea
+                
+                
+                percentCovered = totalArea / baseArea
+                
+                print("percentCovered = \(percentCovered)")
+                
             }
             .onEnded { gestureValue in
                 self.cropLeft = self.paddingLeft
@@ -420,9 +474,19 @@ struct ImageCropView: View {
                 self.cropRight = self.paddingRight
                 self.cropBottom = self.paddingBottom
                 
+                
+                newTopBlockArea = topBlockArea
+                newBottomBlockArea = bottomBlockArea
+                newLeftBlockArea = leftBlockArea
+                newRightBlockArea = rightBlockArea
+                
               //  finalOffset = activeOffset
             }
     }
+    
+//    func calculateAreaPercentCovered() -> CGFloat {
+//        
+//    }
 }
 
 struct CNWImageCropView_Previews: PreviewProvider {
