@@ -23,27 +23,59 @@ struct ImageCropView: View {
     @State var scaledRectWidth: CGFloat = 0
     @State var scaledRectHeight: CGFloat = 0
     var coordinator: ImageCropPicker.Coordinator
-
+//    @State private var position = CGPoint(x: 500, y: 100)
     let gripCircleSize: CGFloat = 16
-    let screenSizeToImageSizeRatio = 0.7
+    let screenSizeToImageSizeRatio: CGFloat = 0.7
+    
+    @State var activeOffset: CGSize = CGSize(width: 0, height: 0)
+    @State var finalOffset: CGSize = CGSize(width: 0, height: 0)
+    var surroundingColor = Color.black.opacity(0.45)
+    
+    
+    @State private var location: CGPoint = CGPoint(x: 0, y: 0) // 1
+    
+    let imageHeight: CGFloat = 19.666667
+    let imageWidth: CGFloat = 29
     
     var body: some View {
         GeometryReader { geometry in
             VStack {
                 Spacer()
                 if let image = self.sourceImage {
-                    Image(uiImage: image)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .scaledToFit()
-                        .frame(width: image.size.width < image.size.height ?
-                               geometry.size.height * screenSizeToImageSizeRatio / image.size.height * image.size.width :
-                                geometry.size.width * screenSizeToImageSizeRatio,
-                               height: image.size.width < image.size.height ?
-                               geometry.size.height * screenSizeToImageSizeRatio :
-                                geometry.size.width * screenSizeToImageSizeRatio / image.size.width * image.size.height)
-                        .clipShape(Rectangle())
+//                    Image(uiImage: image)
+//                        .resizable()
+//                        .aspectRatio(contentMode: .fit)
+//                        .scaledToFit()
+//                        .frame(width: image.size.width < image.size.height ?
+//                               
+//                               geometry.size.height * screenSizeToImageSizeRatio / image.size.height * image.size.width :
+//                                
+//                                geometry.size.width * screenSizeToImageSizeRatio
+//                               
+//                               ,
+//                               height: image.size.width < image.size.height ?
+//                               geometry.size.height * screenSizeToImageSizeRatio :
+//                                geometry.size.width * screenSizeToImageSizeRatio / image.size.width * image.size.height)
+//                        .clipShape(Rectangle())
+                    Color.black
+                        .frame(width: geometry.size.width * screenSizeToImageSizeRatio , height: geometry.size.width * (screenSizeToImageSizeRatio / imageWidth) * imageHeight)
                         .overlay(cropOperator)
+                    Text("image.size.height = \(image.size.height)")
+                    Text("image.size.width = \(image.size.width)")
+//                        .onAppear {
+//                            let width = geometry.size.width
+////                            ?
+////                            geometry.size.height * screenSizeToImageSizeRatio / image.size.height * image.size.width :
+////                             geometry.size.width * screenSizeToImageSizeRatio
+////                            
+//                            let height = geometry.size.height
+////                            ?
+////                            geometry.size.height * screenSizeToImageSizeRatio :
+////                             geometry.size.width * screenSizeToImageSizeRatio / image.size.width * image.size.height
+//                            
+//                            debugPrint("<ttt> width = \(width)")
+//                            debugPrint("<ttt> height = \(height)")
+//                        }
                 }
                 Spacer()
                 HStack {
@@ -57,10 +89,10 @@ struct ImageCropView: View {
                     Spacer()
                     Button("Choose", action: {
                         cropImage()
-                        if let vc = self.coordinator.cropViewHostingController {
-                            vc.dismiss(animated: false)
-                            self.coordinator.parent.originalImage = self.croppedImage
-                        }
+//                        if let vc = self.coordinator.cropViewHostingController {
+//                            vc.dismiss(animated: false)
+//                            self.coordinator.parent.originalImage = self.croppedImage
+//                        }
                     })
                         .padding(20)
                 }
@@ -80,6 +112,10 @@ struct ImageCropView: View {
         let newWidth = xScale * (scaledRectWidth - paddingLeft - paddingRight)
         let newHeight = yScale * (scaledRectHeight - paddingTop - paddingBottom)
         let croppedRect = CGRect(x: paddingLeft * xScale, y: paddingTop * yScale, width: newWidth, height: newHeight)
+        debugPrint("<cord> croppedRect.minY = \(croppedRect.minY)")
+        debugPrint("<cord> croppedRect.minX = \(croppedRect.minX)")
+        debugPrint("<cord> croppedRect.maxY = \(croppedRect.maxY)")
+        debugPrint("<cord> croppedRect.maxX = \(croppedRect.maxX)")
         guard let croppedImage = cgImage.cropping(to: croppedRect) else {
             return
         }
@@ -90,45 +126,65 @@ struct ImageCropView: View {
         GeometryReader { geometry in
             let scaledRectWidth = geometry.size.width
             let scaledRectHeight = geometry.size.height
-            Path { path in
-                DispatchQueue.main.async {
-                    if self.scaledRectWidth != scaledRectWidth {
-                        self.scaledRectWidth = scaledRectWidth
-                    }
-                    if self.scaledRectHeight != scaledRectHeight {
-                        self.scaledRectHeight = scaledRectHeight
-                    }
-                }
-            }
+            
             VStack {
                 ZStack {
-                    Rectangle() // square to fit image size
-                        .stroke(Color(red: 0.8, green: 0.8, blue: 0.8), lineWidth: 2)
-                        .padding(EdgeInsets(top: paddingTop, leading: paddingLeft, bottom: paddingBottom, trailing: paddingRight))
-                    Rectangle() // square to cover all grip circles
-                        .foregroundColor(.gray)
-                        .opacity(0.0001)    // when set opacity=0, drag handler will be ignored. so use small value for it.
-                        .padding(EdgeInsets(top: paddingTop - gripCircleSize/2, leading: paddingLeft - gripCircleSize/2, bottom: paddingBottom - gripCircleSize/2, trailing: paddingRight - gripCircleSize/2))
-                    
-                        .gesture(drag)
                     
                     // gray area outside of cropped area
                     ZStack {
-                        coverFrame
-                            .offset(x:0, y:-scaledRectHeight / 2 + paddingTop / 2)
-                            .frame(height: paddingTop < 0 ? 0 : paddingTop)
-                        coverFrame
-                            .offset(x:0, y:scaledRectHeight / 2 - paddingBottom / 2)
-                            .frame(height: paddingBottom < 0 ? 0 : paddingBottom)
-                        coverFrame
-                            .offset(x:-scaledRectWidth / 2 + paddingLeft / 2, y: (paddingTop - paddingBottom) / 2)
-                            .frame(width: paddingLeft < 0 ? 0 : paddingLeft,
-                                   height: scaledRectHeight - paddingTop - paddingBottom < 0 ? 0 : scaledRectHeight - paddingTop - paddingBottom)
-                        coverFrame
-                            .offset(x:scaledRectWidth / 2 - paddingRight / 2, y: (paddingTop - paddingBottom) / 2)
-                            .frame(width: paddingRight < 0 ? 0 : paddingRight,
-                                   height: scaledRectHeight - paddingTop - paddingBottom < 0 ? 0 : scaledRectHeight - paddingTop - paddingBottom)
+                        Group {
+                            ///top
+                            Rectangle()
+                                .foregroundColor(Color.red.opacity(0.3))
+                                .foregroundColor(surroundingColor)
+                                .offset(x:0, y:-scaledRectHeight / 2 + paddingTop / 2)
+                                .frame(height: paddingTop < 0 ? 0 : paddingTop)
+                            
+                            ///bottom
+                            Rectangle()
+                                .foregroundColor(Color.blue.opacity(0.3))
+                                .foregroundColor(surroundingColor)
+                                .offset(x:0, y:scaledRectHeight / 2 - paddingBottom / 2)
+                                .frame(height: paddingBottom < 0 ? 0 : paddingBottom)
+                            
+                            ///left
+                            Rectangle()
+                                .foregroundColor(Color.yellow.opacity(0.3))
+                                .foregroundColor(surroundingColor)
+                                .offset(x:-scaledRectWidth / 2 + paddingLeft / 2, y: (paddingTop - paddingBottom) / 2)
+                                .frame(width: paddingLeft < 0 ? 0 : paddingLeft,
+                                       height: scaledRectHeight - paddingTop - paddingBottom < 0 ? 0 : scaledRectHeight - paddingTop - paddingBottom)
+                            
+                            ///green
+                            Rectangle()
+                                .foregroundColor(Color.green.opacity(0.3))
+                                .foregroundColor(surroundingColor)
+                                .offset(x:scaledRectWidth / 2 - paddingRight / 2, y: (paddingTop - paddingBottom) / 2)
+                                .frame(width: paddingRight < 0 ? 0 : paddingRight,
+                                       height: scaledRectHeight - paddingTop - paddingBottom < 0 ? 0 : scaledRectHeight - paddingTop - paddingBottom)
+                        }
+                        
+//                        .foregroundColor(.gray)
+//                        .opacity(0.4)
                     }
+                    
+//                    Rectangle() // square to fit image size
+//                        .stroke(Color(red: 0.8, green: 0.8, blue: 0.8), lineWidth: 2)
+//                        .padding(EdgeInsets(top: paddingTop, leading: paddingLeft, bottom: paddingBottom, trailing: paddingRight))
+                    Rectangle() // square to cover all grip circles
+                        .foregroundColor(Color.black.opacity(0.3))
+                        .foregroundColor(surroundingColor)
+                    //   .position(location) // 2
+                        //.offset(x: activeOffset.width, y: activeOffset.height)
+                        .opacity(0.5)    // when set opacity=0, drag handler will be ignored. so use small value for it.
+                        .padding(EdgeInsets(top: paddingTop - gripCircleSize/2,
+                                            leading: paddingLeft - gripCircleSize/2,
+                                            bottom: paddingBottom - gripCircleSize/2,
+                                            trailing: paddingRight - gripCircleSize/2))
+                        
+                        .gesture(drag)
+                    
+                    
                     // grip circles
                     ZStack {
                         //top-left
@@ -148,6 +204,14 @@ struct ImageCropView: View {
                         //bottom-center
                         gripCircle.offset(x: (paddingLeft - paddingRight) / 2, y: -paddingBottom + scaledRectHeight / 2)
                     }
+                }
+            }
+            .onAppear {
+                if self.scaledRectWidth != scaledRectWidth {
+                    self.scaledRectWidth = scaledRectWidth
+                }
+                if self.scaledRectHeight != scaledRectHeight {
+                    self.scaledRectHeight = scaledRectHeight
                 }
             }
         }
@@ -190,6 +254,173 @@ struct ImageCropView: View {
                 self.cropTop = self.paddingTop
                 self.cropRight = self.paddingRight
                 self.cropBottom = self.paddingBottom
+            }
+    }
+    
+    var drag2: some Gesture {
+        return DragGesture()
+            .onChanged { gestureValue in
+
+                let cropX1 = gestureValue.startLocation.x - self.cropLeft
+               
+                let cropX2 = gestureValue.startLocation.x - (self.scaledRectWidth - self.cropRight)
+                
+                let cropY1 = gestureValue.startLocation.y - self.cropTop
+                
+                let cropY2 = gestureValue.startLocation.y - (self.scaledRectHeight - self.cropBottom)
+                
+                
+                if (abs(cropX1) < gripCircleSize) {
+                    
+                    let leftPadding = cropLeft + gestureValue.translation.width
+                    let percent = (leftPadding / scaledRectWidth)
+                    debugPrint("percent = \(percent)")
+                    if percent < 0.6 {
+                        self.paddingLeft = max(leftPadding, 0)
+                        debugPrint("<jkg> Hit 1")
+                    }
+                    
+                    
+                }
+                else if (abs(cropX2) < gripCircleSize) {
+                    debugPrint("<jkg> Hit 2")
+                    let rightPadding = cropRight - gestureValue.translation.width
+                    
+                    let percent = (rightPadding / scaledRectWidth)
+                    debugPrint("percent = \(percent)")
+                    if percent < 0.6 {
+                        self.paddingRight = max(rightPadding, 0)
+                    }
+                   
+                  //  self.paddingRight = max(rightPadding, 0)
+                    
+                //    self.paddingRight = percent < 0.8 ? max(rightPadding, 0) : paddingRight
+                    
+                    
+                }
+                
+                
+            //    if gestureValue.startLocation.y  > 50 {
+                else if (abs(cropY1) < gripCircleSize) {
+                    debugPrint("<jkg> Hit 3")
+                    let topPadding = cropTop + gestureValue.translation.height
+                    
+                    //let percent = (topPadding / scaledRectHeight)
+                    let percent = (topPadding / scaledRectHeight)
+                    debugPrint("percent = \(percent)")
+                    if percent < 0.6 {
+                        self.paddingTop = max(topPadding, 0)
+                    }
+                    
+                    
+                }
+                
+                else if (abs(cropY2) < gripCircleSize) {
+                    debugPrint("<jkg> Hit 4")
+                    let bottomPadding = cropBottom - gestureValue.translation.height
+                    
+                    let percent = (bottomPadding / scaledRectHeight)
+                    debugPrint("percent = \(percent)")
+                    if percent < 0.6 {
+                        self.paddingBottom = max(bottomPadding, 0)
+                    }
+                    
+                    
+                } else {
+                    debugPrint("<jkg><1> Hit 5")
+                    guard cropTop > 0 || cropBottom > 0 || cropLeft > 0 || cropRight > 0  else {
+                        debugPrint("<jkg><1> Hit 6 - \(cropTop)")
+                        return
+                    }
+                    debugPrint("<jkg><1> Hit 7 - \(cropTop)")
+                    let topPadding = cropTop + gestureValue.translation.height
+                    let leftPadding = cropLeft + gestureValue.translation.width
+                    let rightPadding = cropRight - gestureValue.translation.width
+                    let bottomPadding = cropBottom - gestureValue.translation.height
+                    
+                    debugPrint("<jkg> topPadding = \(topPadding)")
+//                    let topPercent = (topPadding / scaledRectHeight)
+//                    let leftPercent = (leftPadding / scaledRectWidth)
+//                    let rightPercent = (rightPadding / scaledRectWidth)
+//                    let bottomPercent = (bottomPadding / scaledRectHeight)
+//                    debugPrint("percent = \(bottomPercent)")
+//                    if topPercent < 0.6 {
+//                        self.paddingTop = max(topPadding, 0)
+//                    }
+//                    if leftPercent < 0.6 {
+//                        self.paddingLeft = max(leftPadding, 0)
+//                    }
+//                    if bottomPercent < 0.6 {
+//                        self.paddingBottom = max(bottomPadding, 0)
+//                    }
+//                    if rightPercent < 0.6 {
+//                        self.paddingRight = max(rightPadding, 0)
+//                    }
+//                    if topPadding >= 0, leftPadding >= 0, rightPadding >= 0, bottomPadding >= 0 {
+//                        self.paddingTop = max(topPadding, 0)
+//                        self.paddingLeft = max(leftPadding, 0)
+//                        self.paddingRight = max(rightPadding, 0)
+//                        self.paddingBottom = max(bottomPadding, 0)
+//                        
+//                    }
+//                    
+//                    if topPadding >= 0, leftPadding >= 0, rightPadding >= 0, bottomPadding >= 0 {
+//                        self.paddingTop = max(topPadding, 0)
+//                        self.paddingLeft = max(leftPadding, 0)
+//                        self.paddingRight = max(rightPadding, 0)
+//                        self.paddingBottom = max(bottomPadding, 0)
+//                        
+//                    }
+                    
+                    if topPadding > 0,  bottomPadding > 0 {
+                        self.paddingTop = max(topPadding, 0)
+                       
+                        self.paddingBottom = max(bottomPadding, 0)
+                        
+                    }
+                    
+                    if leftPadding >= 0, rightPadding >= 0 {
+                        
+                        self.paddingLeft = max(leftPadding, 0)
+                        self.paddingRight = max(rightPadding, 0)
+                      
+                        
+                    }
+                    
+//                    self.paddingTop = max(topPadding, 0)
+//                    self.paddingBottom = max(bottomPadding, 0)
+//                    self.paddingLeft = max(leftPadding, 0)
+//                    self.paddingRight = max(rightPadding, 0)
+                    
+                   
+                    
+                   
+                    
+                   
+                    
+                }
+              // }
+               
+               
+                
+                
+                debugPrint("<xyj> self.paddingLeft = \(self.paddingLeft))")
+                debugPrint("gestureValue.startLocation.x = \(gestureValue.startLocation.x)")
+                debugPrint("<jkg> self.cropLeft = \(self.cropLeft))")
+                
+                debugPrint("<xyj> gestureValue.translation.width = \(gestureValue.translation.width))")
+                
+               // let workingOffset = CGSize(width: finalOffset.width + gestureValue.translation.width , height: finalOffset.height + gestureValue.translation.height)
+                //debugPrint("workingOffset.width = \(gestureValue.translation.width)")
+//activeOffset.width = gestureValue.translation.width
+            }
+            .onEnded { gestureValue in
+                self.cropLeft = self.paddingLeft
+                self.cropTop = self.paddingTop
+                self.cropRight = self.paddingRight
+                self.cropBottom = self.paddingBottom
+                
+              //  finalOffset = activeOffset
             }
     }
 }

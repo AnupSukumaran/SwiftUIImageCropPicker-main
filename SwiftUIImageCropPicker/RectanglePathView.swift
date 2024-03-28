@@ -37,29 +37,43 @@ struct RectanglePathView: View {
                 
                 Spacer()
             }
-            VStack {
+            
+            ZStack {
                 Rectangle()
-                    .opacity(0.25)
-                    .foregroundStyle(.red)
-                    .border(.red)
-                    .frame(width: self.frameX, height: self.frameY)
-                Text("Location: \(Int(location.x)), \(Int(location.y))")
+                    .background(Color.red)
+                    .opacity(0.5)
+                VStack {
+                    VStack {
+                        Rectangle()
+                           // .opacity(0.25)
+                           // .foregroundStyle(.red)
+                            //.border(.red)
+                            .frame(width: self.frameX, height: self.frameY)
+                            .blendMode(.destinationOut)
+                            .border(.red)
+                        Text("Location: \(Int(location.x)), \(Int(location.y))")
+                    }
+                    .gesture(drag)
+                    .position(self.position)
+                    .coordinateSpace(name: "stack")
+                }
+                .compositingGroup()
+                
             }
-            .gesture(drag)
-            .position(self.position)
-            .coordinateSpace(name: "stack")
-            Circle()
-                .foregroundStyle(.black)
-                .frame(width: 20, height: 20)
-                .position(self.circlePosition)
-            Rectangle()
-                .foregroundStyle(.blue)
-                .frame(width: 1, height: self.frameY + 10)
-                .position(CGPoint(x: self.newPosition.x - self.frameX * (1/4) , y: self.newPosition.y))
-            Rectangle()
-                .foregroundStyle(.green)
-                .frame(width: self.frameX + 10, height: 1)
-                .position(CGPoint(x: self.newPosition.x, y: self.newPosition.y + self.frameY * (1/4)))
+            
+            
+//            Circle()
+//                .foregroundStyle(.black)
+//                .frame(width: 20, height: 20)
+//                .position(self.circlePosition)
+//            Rectangle()
+//                .foregroundStyle(.blue)
+//                .frame(width: 1, height: self.frameY + 10)
+//                .position(CGPoint(x: self.newPosition.x - self.frameX * (1/4) , y: self.newPosition.y))
+//            Rectangle()
+//                .foregroundStyle(.green)
+//                .frame(width: self.frameX + 10, height: 1)
+//                .position(CGPoint(x: self.newPosition.x, y: self.newPosition.y + self.frameY * (1/4)))
         }
     }
     

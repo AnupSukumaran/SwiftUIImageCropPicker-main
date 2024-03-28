@@ -16,6 +16,8 @@
 		8D3705832990963B00F7EA98 /* SwiftUIImageCropPickerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D3705822990963B00F7EA98 /* SwiftUIImageCropPickerUITestsLaunchTests.swift */; };
 		8D370590299098DE00F7EA98 /* ImageCropPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D37058F299098DE00F7EA98 /* ImageCropPicker.swift */; };
 		8D370592299099B100F7EA98 /* ImageCropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D370591299099B100F7EA98 /* ImageCropView.swift */; };
+		F54D31142BB1CAD6004BEA79 /* TestDragUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = F54D31132BB1CAD6004BEA79 /* TestDragUI.swift */; };
+		F59515D52BB1994700706061 /* RectanglePathView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F59515D42BB1994600706061 /* RectanglePathView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +50,8 @@
 		8D3705822990963B00F7EA98 /* SwiftUIImageCropPickerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIImageCropPickerUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		8D37058F299098DE00F7EA98 /* ImageCropPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropPicker.swift; sourceTree = "<group>"; };
 		8D370591299099B100F7EA98 /* ImageCropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCropView.swift; sourceTree = "<group>"; };
+		F54D31132BB1CAD6004BEA79 /* TestDragUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestDragUI.swift; sourceTree = "<group>"; };
+		F59515D42BB1994600706061 /* RectanglePathView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RectanglePathView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,8 +106,10 @@
 				8D3705672990963A00F7EA98 /* ContentView.swift */,
 				8D37058F299098DE00F7EA98 /* ImageCropPicker.swift */,
 				8D370591299099B100F7EA98 /* ImageCropView.swift */,
+				F59515D42BB1994600706061 /* RectanglePathView.swift */,
 				8D3705692990963B00F7EA98 /* Assets.xcassets */,
 				8D37056B2990963B00F7EA98 /* Preview Content */,
+				F54D31132BB1CAD6004BEA79 /* TestDragUI.swift */,
 			);
 			path = SwiftUIImageCropPicker;
 			sourceTree = "<group>";
@@ -264,7 +270,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				8D370592299099B100F7EA98 /* ImageCropView.swift in Sources */,
+				F59515D52BB1994700706061 /* RectanglePathView.swift in Sources */,
 				8D370590299098DE00F7EA98 /* ImageCropPicker.swift in Sources */,
+				F54D31142BB1CAD6004BEA79 /* TestDragUI.swift in Sources */,
 				8D3705682990963A00F7EA98 /* ContentView.swift in Sources */,
 				8D3705662990963A00F7EA98 /* SwiftUIImageCropPickerApp.swift in Sources */,
 			);
